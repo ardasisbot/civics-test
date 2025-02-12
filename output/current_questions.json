@@ -1,0 +1,88 @@
+[
+  {
+    "question_number": 20,
+    "question_text": "Who is one of your state's U.S. Senators now?*",
+    "answers": [
+      "Answers will vary. [District of Columbia residents and residents of U.S. territories should answer that D.C. (or the territory where the applicant lives) has no U.S. Senators.]"
+    ]
+  },
+  {
+    "question_number": 23,
+    "question_text": "Name your U.S. Representative.",
+    "answers": [
+      "Answers will vary. [Residents of territories with nonvoting Delegates or Resident Commissioners may provide the name of that Delegate or Commissioner. Also acceptable is any statement that the territory has no (voting) Representatives in Congress.]"
+    ]
+  },
+  {
+    "question_number": 28,
+    "question_text": "What is the name of the President of the United States now?*",
+    "answers": [
+      "Donald J. Trump",
+      "Donald Trump",
+      "Trump"
+    ]
+  },
+  {
+    "question_number": 29,
+    "question_text": "What is the name of the Vice President of the United States now?",
+    "answers": [
+      "JD Vance",
+      "Vance"
+    ]
+  },
+  {
+    "question_number": 39,
+    "question_text": "How many justices are on the Supreme Court?",
+    "answers": [
+      "nine (9)"
+    ]
+  },
+  {
+    "question_number": 40,
+    "question_text": "Who is the Chief Justice of the United States now?",
+    "answers": [
+      "John Roberts",
+      "John G. Roberts, Jr."
+    ]
+  },
+  {
+    "question_number": 43,
+    "question_text": "Who is the Governor of your state now?",
+    "answers": [
+      "Answers will vary. [District of Columbia residents should answer that D.C. does not have a Governor.]"
+    ]
+  },
+  {
+    "question_number": 46,
+    "question_text": "What is the political party of the President now?",
+    "answers": [
+      "Republican (Party)"
+    ]
+  },
+  {
+    "question_number": 47,
+    "question_text": "What is the name of the Speaker of the House of Representatives now?",
+    "answers": [
+      "Mike Johnson",
+      "Johnson",
+      "James Michael Johnson (birth name)"
+    ]
+  },
+  {
+    "question_number": 100,
+    "question_text": "Nametwonational U.S. holidays.",
+    "answers": [
+      "New Year\u2019s Day",
+      "Martin Luther King, Jr. Day",
+      "Presidents\u2019 Day",
+      "Memorial Day",
+      "Juneteenth",
+      "Independence Day",
+      "Labor Day",
+      "Columbus Day",
+      "Veterans Day",
+      "Thanksgiving",
+      "Christmas"
+    ]
+  }
+]
