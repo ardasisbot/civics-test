@@ -25,7 +25,7 @@ export default function Header() {
                 priority
               />
               <Link href="/" className="text-2xl font-bold whitespace-nowrap">
-                U.S. Civics Test
+                U.S. Civics Practice Test
               </Link>
             </div>
             

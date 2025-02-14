@@ -12,16 +12,24 @@ export async function POST(request: Request) {
   try {
     const answers: QuizAnswer[] = await request.json()
 
-    // Create model instance with Gemini Pro
-    const model = google('gemini-2.0-flash-lite-preview-02-05')
+    // Split answers into chunks of 50
+    const chunkSize = 50
+    const answerChunks = []
+    for (let i = 0; i < answers.length; i += chunkSize) {
+      answerChunks.push(answers.slice(i, i + chunkSize))
+    }
 
-    // Construct prompt for LLM
-    const prompt = `You are an expert evaluator for US Civics test answers. 
+    // Process each chunk and combine results
+    const allEvaluations = []
+    for (const chunk of answerChunks) {
+      const model = google('gemini-2.0-flash-lite-preview-02-05')
+      
+      const prompt = `You are an expert evaluator for US Civics test answers. 
 For each question, evaluate if the user's answer can be considered correct based on the provided correct answers.
 Consider variations in phrasing, partial answers, and semantic equivalence.
 
 Here are the answers to evaluate:
-${JSON.stringify(answers, null, 2)}
+${JSON.stringify(chunk, null, 2)}
 
 Return a JSON array where each object contains:
 - question_text: the original question
@@ -32,40 +40,25 @@ Return a JSON array where each object contains:
 
 Ensure your response is ONLY the JSON array, with no additional text.`
 
-    // Generate evaluation using Gemini
-    const { text } = await generateText({
-      model,
-      prompt,
-    })
+      const { text } = await generateText({
+        model,
+        prompt,
+      })
 
-    console.log('Raw LLM Response:', text);
-
-    try {
-      // Clean and validate the text response
-      let cleanText = text.trim();
-      
-      // Check if text starts/ends with backticks (common in LLM responses)
+      // Clean and parse the chunk response
+      let cleanText = text.trim()
       if (cleanText.startsWith('```json')) {
-        cleanText = cleanText.replace(/^```json\n/, '').replace(/\n```$/, '');
+        cleanText = cleanText.replace(/^```json\n/, '').replace(/\n```$/, '')
       } else if (cleanText.startsWith('```')) {
-        cleanText = cleanText.replace(/^```\n/, '').replace(/\n```$/, '');
+        cleanText = cleanText.replace(/^```\n/, '').replace(/\n```$/, '')
       }
 
-      console.log('Cleaned text before parsing:', cleanText);
-
-      // Parse the response
-      const evaluations = JSON.parse(cleanText)
-      console.log('Parsed Evaluations:', evaluations);
-      
-      return NextResponse.json(evaluations)
-    } catch (parseError) {
-      console.error('JSON Parse Error:', parseError);
-      console.error('Failed to parse text:', text);
-      return NextResponse.json(
-        { error: 'Failed to parse LLM response' },
-        { status: 500 }
-      )
+      const chunkEvaluations = JSON.parse(cleanText)
+      allEvaluations.push(...chunkEvaluations)
     }
+
+    return NextResponse.json(allEvaluations)
+    
   } catch (error) {
     console.error('Error in quiz evaluation:', error)
     if (error instanceof Error) {
@@ -78,3 +71,13 @@ Ensure your response is ONLY the JSON array, with no additional text.`
     )
   }
 } 
+
+
+// only pass in the questions that are not answered correctly (tab-to-autocompleete) 
+// cache results  of the evaluation: 
+  // 
+// need to implement caching (can I use redis?)
+
+// whlile evaluation is running - let's add a loading state
+
+
