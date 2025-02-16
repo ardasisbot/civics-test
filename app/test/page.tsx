@@ -36,10 +36,10 @@ export default function Test() {
   // Get all parameters from URL
   const mode = searchParams.get('mode') || 'sample'
   const view = searchParams.get('view') || 'paginated'
-  const answerType = searchParams.get('answerType') || 'multiple'
+  const answerType = searchParams.get('answerType') || 'easy'
 
   const isPaginatedView = view === 'paginated'
-  const isMultipleChoice = answerType === 'multiple'
+  const isMultipleChoice = answerType === 'easy'
 
   // Core quiz state
   const [questions, setQuestions] = useState<Question[]>([])
@@ -198,8 +198,8 @@ export default function Test() {
   }
 
   /**
-   * Single place to handle “Start evaluation, set loading,
-   * then finish evaluation” logic.
+   * Single place to handle "Start evaluation, set loading,
+   * then finish evaluation" logic.
    */
   const handleEvaluate = async () => {
     setEvaluating(true)
@@ -370,7 +370,7 @@ export default function Test() {
     theseQuestions: Question[],
     showSubmit: boolean = false
   ) => (
-    <div className="space-y-4 mx-20 mb-6">
+    <div className="space-y-4 w-full">
       {theseQuestions.map(question => (
         <QuestionComponent
           key={question.id}
@@ -481,7 +481,7 @@ export default function Test() {
   }
 
   return (
-    <main className="container mx-auto p-4 pt-20">
+    <main className="container mx-auto p-4 pt-20 max-w-[1200px]">
       {/* e.g. Show question count */}
       <div className="text-sm text-gray-600 mb-4">
         Showing {questions.length} question
@@ -500,7 +500,12 @@ export default function Test() {
         />
       )}
 
-      <div ref={questionsRef}>{renderQuestions()}</div>
+      <div 
+        ref={questionsRef} 
+        className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        {renderQuestions()}
+      </div>
     </main>
   )
 }

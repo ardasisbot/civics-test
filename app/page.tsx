@@ -15,14 +15,21 @@ export default function Home() {
           </div>
           <h2 className="text-3xl font-bold mb-4 text-center mt-10">Take the U.S. Civics Practice Test</h2>
           <h3 className="text-muted-foreground font-bold text-center text-balance max-w-2xl mx-auto px-4 text-pretty">
-            U.S. Civics Test is comprised of 100 questions. Test your knowledge now.
+            The U.S. Civics Test is comprised of <a 
+              href="https://www.uscis.gov/sites/default/files/document/questions-and-answers/100q.pdf" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline hover:text-[#f45844] transition-colors"
+            >
+              100
+            </a> questions. Test your knowledge now.
           </h3>
           <div className="flex gap-4 mt-8">
             <Button asChild>
-              <Link href="/test?mode=sample">Sample Test</Link>
+              <Link href="/test?mode=sample&answerType=easy">Sample Test</Link>
             </Button>
             <Button asChild>
-              <Link href="/test?mode=full">Full Test</Link>
+              <Link href="/test?mode=full&answerType=easy">Full Test</Link>
             </Button>
           </div>
         </section>

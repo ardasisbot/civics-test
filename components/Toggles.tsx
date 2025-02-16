@@ -17,13 +17,18 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useState } from 'react'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
 
 export function Toggles() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const mode = searchParams.get('mode')
   const view = searchParams.get('view') || 'paginated'
-  const answerType = searchParams.get('answerType') || 'multiple'
+  const answerType = searchParams.get('answerType') || 'easy'
   const isTestRoute = searchParams.has('mode')
   const [showAlert, setShowAlert] = useState(false)
   const [showMissedAlert, setShowMissedAlert] = useState(false)
@@ -49,14 +54,28 @@ export function Toggles() {
     <div className="flex items-center space-x-6">
       {/* Test Mode Switch with Alert */}
       <div className="flex items-center space-x-2">
-        <Switch
-          checked={mode === 'full'}
-          onCheckedChange={handleModeChange}
-          id="test-mode"
-        />
-        <Label htmlFor="test-mode" className="text-sm">
-          {mode === 'full' ? 'Full Test' : 'Practice Test'}
-        </Label>
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={mode === 'full'}
+                onCheckedChange={handleModeChange}
+                id="test-mode"
+              />
+              <Label htmlFor="test-mode" className="text-sm cursor-help">
+                {mode === 'full' ? 'Full Test' : 'Sample Test'}
+              </Label>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-2">
+
+              <p className="text-sm">
+                Switch between a full 100-question test or a quick 5-question sample. 
+              </p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
 
         <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
           <AlertDialogContent>
@@ -96,27 +115,57 @@ export function Toggles() {
 
       {/* Answer Type Controls */}
       <div className="flex items-center space-x-2">
-        <Link href={`/test?mode=${mode}&view=${view}&answerType=${answerType === 'multiple' ? 'text' : 'multiple'}`}>
-          <Switch
-            checked={answerType === 'multiple'}
-            id="answer-mode"
-          />
-        </Link>
-        <Label htmlFor="answer-mode" className="text-sm">
-          {answerType === 'multiple' ? 'Multiple Choice' : 'Open Text'}
-        </Label>
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <div className="flex items-center space-x-2">
+              <Link href={`/test?mode=${mode}&view=${view}&answerType=${answerType === 'easy' ? 'hard' : 'easy'}`}>
+                <Switch
+                  checked={answerType === 'easy'}
+                  id="answer-mode"
+                />
+              </Link>
+              <Label htmlFor="answer-mode" className="text-sm cursor-help">
+                {answerType === 'easy' ? 'Easy Mode' : 'Hard Mode'}
+              </Label>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-2">
+              {/* <h4 className="text-sm font-semibold">Difficulty Mode</h4> */}
+              <p className="text-sm">
+                Easy Mode: Multiple choice questions to help you learn.<br />
+                Hard Mode: Open text answers for realistic test practice.
+              </p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
       </div>
 
       {/* Review Missed Questions Toggle */}
       <div className="flex items-center space-x-2">
-        <Switch
-          checked={reviewMissed}
-          onCheckedChange={handleMissedStateChange}
-          id="review-missed"
-        />
-        <Label htmlFor="review-missed" className="text-sm">
-          Review Missed
-        </Label>
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={reviewMissed}
+                onCheckedChange={handleMissedStateChange}
+                id="review-missed"
+              />
+              <Label htmlFor="review-missed" className="text-sm cursor-help">
+                Review Missed
+              </Label>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold">Review Mode</h4>
+              <p className="text-sm">
+                Focus on questions you haven't answered correctly yet. 
+                Perfect for targeting your weak spots and improving your score.
+              </p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
 
         <AlertDialog open={showMissedAlert} onOpenChange={setShowMissedAlert}>
           <AlertDialogContent>

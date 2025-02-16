@@ -308,6 +308,7 @@ function MultipleChoiceQuestion({
       onKeyDown={(e) => handleKeyDown(e, question.id)}
       tabIndex={0}
     >
+      {/* {isMultipleCorrect && <p className="text-sm text-muted-foreground mt-2">Select all correct answers</p>} */}
       {shuffledChoices.map((choice, index) => {
         const isSelected = questionAnswers.includes(choice.text)
         const showResult = submitted
@@ -337,14 +338,14 @@ function MultipleChoiceQuestion({
             />
             <Label
               htmlFor={`q${question.id}-${index}`}
-              className="text-sm font-medium text-zinc-700 cursor-pointer"
+              className="p-5 text-sm font-medium text-zinc-700 cursor-pointer"
             >
               {choice.text}
             </Label>
           </div>
         )
       })}
-      {isMultipleCorrect && <p className="text-sm text-muted-foreground mt-2">Select all correct answers</p>}
+      
     </div>
   )
 }
