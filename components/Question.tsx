@@ -170,7 +170,7 @@ export function Question({
   return (
     <Card className="w-full bg-[#faf9f7] border-4 shadow-lg m-5 px-10 mx-10">
       <CardHeader className="pb-4">
-        <div className="flex justify-between items-center gap-3 text-sm">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-sm">
           <div className="flex items-center gap-2">
             <Image
               src="/us_flag_icon.png"
@@ -182,13 +182,12 @@ export function Question({
             <span className="text-zinc-600">U.S. Civics Test</span>
           </div>
           {questionNumber && totalQuestions && (
-            <span className="text-zinc-600">
+            <span className="text-zinc-600 order-first sm:order-none">
               Question {questionNumber} of {totalQuestions}
             </span>
           )}
-          {submitted && evaluationResult && (
-            <>
-              {console.log('Rendering badge for question', question.id, 'with result:', evaluationResult)}
+          <div className="flex flex-wrap gap-2 justify-end">
+            {submitted && evaluationResult && (
               <Badge className={
                 evaluationResult.is_correct 
                   ? "bg-green-600 text-white hover:bg-green-700" 
@@ -196,35 +195,34 @@ export function Question({
               }>
                 {evaluationResult.is_correct ? "Correct" : "Incorrect"}
               </Badge>
-            </>
-          )}
-
-          <div className="flex gap-2">
-            {question.hint && (
-              <Button onClick={() => setIsHintShown(!isHintShown)} variant="outline" size="sm">
-                {isHintShown ? "Hide Hint" : "Show Hint"}
-              </Button>
             )}
-            {!submitted && (
-              <>
-                <Button
-                  onClick={() => setIsAnswerShown(!isAnswerShown)}
-                  variant="outline"
-                  size="sm"
-                  className="text-[#f45844] hover:text-[#f45844]/90"
-                >
-                  {isAnswerShown ? "Hide Answer" : "Show Answer"}
+            <div className="flex flex-wrap gap-2">
+              {question.hint && (
+                <Button onClick={() => setIsHintShown(!isHintShown)} variant="outline" size="sm">
+                  {isHintShown ? "Hide Hint" : "Show Hint"}
                 </Button>
-                <Button
-                  onClick={() => onSkipQuestion?.(question.id, true)}
-                  variant="outline"
-                  size="sm"
-                  className={skippedQuestions.includes(question.id) ? "bg-yellow-50" : ""}
-                >
-                  {skippedQuestions.includes(question.id) ? "Skipped" : "Skip"}
-                </Button>
-              </>
-            )}
+              )}
+              {!submitted && (
+                <>
+                  <Button
+                    onClick={() => setIsAnswerShown(!isAnswerShown)}
+                    variant="outline"
+                    size="sm"
+                    className="text-[#f45844] hover:text-[#f45844]/90"
+                  >
+                    {isAnswerShown ? "Hide Answer" : "Show Answer"}
+                  </Button>
+                  <Button
+                    onClick={() => onSkipQuestion?.(question.id, true)}
+                    variant="outline"
+                    size="sm"
+                    className={skippedQuestions.includes(question.id) ? "bg-yellow-50" : ""}
+                  >
+                    {skippedQuestions.includes(question.id) ? "Skipped" : "Skip"}
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -304,7 +302,7 @@ function MultipleChoiceQuestion({
 
   return (
     <div 
-      className="grid grid-cols-2 gap-4 px-4"
+      className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-4"
       onKeyDown={(e) => handleKeyDown(e, question.id)}
       tabIndex={0}
     >
@@ -325,7 +323,7 @@ function MultipleChoiceQuestion({
         return (
           <div
             key={index}
-            className={`relative flex items-center justify-center p-4 rounded-lg border-2 transition-colors ${styles}`}
+            className={`relative flex items-center p-4 rounded-lg border-2 transition-colors ${styles}`}
             onClick={() => !submitted && handleAnswerChange(question.id, choice.text, isMultipleCorrect)}
           >
             <input
@@ -338,7 +336,7 @@ function MultipleChoiceQuestion({
             />
             <Label
               htmlFor={`q${question.id}-${index}`}
-              className="p-5 text-sm font-medium text-zinc-700 cursor-pointer"
+              className="pl-8 py-2 text-sm font-medium text-zinc-700 cursor-pointer flex-grow"
             >
               {choice.text}
             </Label>
