@@ -62,7 +62,7 @@ export function Review({
   }
 
   return (
-    <Card className="mb-8 p-0 sm:p-5 bg-gradient-to-r from-blue-50 to-indigo-50">
+    <Card className="mb-8 p-3 sm:p-5  bg-gradient-to-r from-blue-50 to-indigo-50 ">
       <div className="space-y-6">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">

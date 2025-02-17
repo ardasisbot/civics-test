@@ -1,8 +1,7 @@
 'use client'
 
 import GlitchingFlag from '@/components/flagAnimation'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { TestButton } from '@/components/TestButton'
 
 export default function Home() {
   return (
@@ -25,12 +24,12 @@ export default function Home() {
             </a> questions. Test your knowledge now.
           </h3>
           <div className="flex gap-4 mt-8">
-            <Button asChild>
-              <Link href="/test?mode=sample&answerType=easy">Sample Test</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/test?mode=full&answerType=easy">Full Test</Link>
-            </Button>
+            <TestButton href="/test?mode=sample&answerType=easy">
+              Sample Test
+            </TestButton>
+            <TestButton href="/test?mode=full&answerType=easy">
+              Full Test
+            </TestButton>
           </div>
         </section>
       </main>

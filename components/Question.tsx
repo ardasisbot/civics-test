@@ -9,6 +9,108 @@ import { Input } from "@/components/ui/input";
 import Image from 'next/image';
 import { Badge } from "@/components/ui/badge";
 
+
+// Add NUMBER_WORDS constant
+const NUMBER_WORDS: { [key: string]: string } = {
+  'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5',
+  'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
+  'eleven': '11', 'twelve': '12', 'thirteen': '13', 'fourteen': '14',
+  'fifteen': '15', 'sixteen': '16', 'seventeen': '17', 'eighteen': '18',
+  'nineteen': '19', 'twenty': '20', 'thirty': '30', 'forty': '40',
+  'fifty': '50', 'sixty': '60', 'seventy': '70', 'eighty': '80',
+  'ninety': '90'
+};
+
+// Add helper functions
+const convertNumberWords = (text: string): string => {
+  let result = text.toLowerCase();
+  
+  // Handle compound numbers (e.g., "twenty-seven", "thirty five")
+  const compoundRegex = new RegExp(
+    `(${Object.keys(NUMBER_WORDS).join('|')})[-\\s]+(${Object.keys(NUMBER_WORDS).join('|')})`,
+    'gi'
+  );
+  
+  result = result.replace(compoundRegex, (match, tens, ones) => {
+    const tensNum = parseInt(NUMBER_WORDS[tens.toLowerCase()]);
+    const onesNum = parseInt(NUMBER_WORDS[ones.toLowerCase()]);
+    
+    if (tensNum % 10 === 0 && tensNum <= 90) {
+      return (tensNum + onesNum).toString();
+    }
+    return match;
+  });
+
+  // Handle single number words
+  const singleRegex = new RegExp(`\\b(${Object.keys(NUMBER_WORDS).join('|')})\\b`, 'gi');
+  result = result.replace(singleRegex, match => NUMBER_WORDS[match.toLowerCase()] || match);
+
+  return result;
+};
+
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .trim()
+    // Convert number words to digits
+    .split(/\s+/)
+    .map(word => convertNumberWords(word))
+    .join(' ')
+    // Remove parenthetical content and special characters
+    .replace(/\([^)]*\)/g, '')
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+// Define the evaluation result type once
+type EvaluationResult = {
+  is_correct: boolean;
+  explanation?: string;  // Make explanation optional
+}
+
+interface BaseQuestionProps {
+  question: QuestionType
+  submitted: boolean
+  questionNumber?: number
+  totalQuestions?: number
+  onSkipQuestion?: (questionId: string, goToNext?: boolean) => void
+  skippedQuestions?: string[]
+  evaluationResult?: EvaluationResult
+}
+
+interface QuestionProps extends BaseQuestionProps {
+  isMultipleChoice: boolean
+  userAnswers: { [key: string]: string[] | string }
+  handleAnswerChange: (questionId: string, choiceText: string, isMultipleCorrect: boolean) => void
+  handleTextAnswerChange: (questionId: string, value: string) => void
+  handleKeyDown: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => void
+  onQuestionKeyPress: (questionId: string) => void
+  autoCompleteMatch: string | null
+  showCorrectAnswers?: boolean
+  correctAnswers?: string[]
+}
+
+interface MultipleChoiceQuestionProps {
+  question: QuestionType
+  userAnswers: { [key: string]: string[] }
+  handleAnswerChange: (questionId: string, choiceText: string, isMultipleCorrect: boolean) => void
+  handleKeyDown: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => void
+  submitted: boolean
+  isAnswerShown: boolean
+}
+
+// Remove evaluationResult from OpenTextQuestionProps since it's included in BaseQuestionProps
+interface OpenTextQuestionProps extends BaseQuestionProps {
+  userAnswerText: string
+  handleTextAnswerChange: (questionId: string, value: string) => void
+  handleKeyDown: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => void
+  onQuestionKeyPress: (questionId: string) => void
+  autoCompleteMatch: string | null
+  correctAnswers: string[]
+  showCorrectAnswers?: boolean
+}
+
 export function Question({
   question,
   isMultipleChoice,
@@ -17,6 +119,7 @@ export function Question({
   handleAnswerChange,
   handleTextAnswerChange,
   handleKeyDown,
+  onQuestionKeyPress,
   autoCompleteMatch,
   questionNumber,
   totalQuestions,
@@ -40,6 +143,14 @@ export function Question({
     }
   }, [submitted, evaluationResult, question.id, userAnswers, question.choices]);
 
+  // Handle keyboard events at the Card level only for multiple choice
+  const handleCardKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (isMultipleChoice && e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      onQuestionKeyPress(question.id)
+    }
+  }
+
   const renderAnswers = () => {
     if (isMultipleChoice) {
       return (
@@ -60,6 +171,7 @@ export function Question({
         userAnswerText={userAnswers[question.id] as string}
         handleTextAnswerChange={handleTextAnswerChange}
         handleKeyDown={handleKeyDown}
+        onQuestionKeyPress={onQuestionKeyPress}
         submitted={submitted}
         autoCompleteMatch={autoCompleteMatch}
         correctAnswers={question.choices.filter(c => c.is_correct).map(c => c.text)}
@@ -69,8 +181,12 @@ export function Question({
   };
 
   return (
-    <Card className="w-full bg-[#faf9f7] border-2 shadow-lg mx-1 p-5 sm:p-6">
-<CardHeader className="pb-0 sm:pb-4">
+    <Card 
+      className="w-full bg-[#faf9f7] border-2 shadow-lg mx-1 p-5 sm:p-6"
+      onKeyDown={handleCardKeyDown}
+      tabIndex={0}
+    >
+      <CardHeader className="pb-0 sm:pb-4">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-sm">
           <div className="flex items-center justify-between ">
             <div className="flex items-center gap-2">
@@ -173,6 +289,7 @@ export function Question({
         {isAnswerShown && !submitted && (
           <div className="p-3 bg-[#fff5f4] border border-[#f45844]/20 rounded-md">
             <p className="font-medium text-[#f45844]">Correct Answer(s):</p>
+            
             <ul className="list-disc pl-5 text-sm text-[#f45844]">
               {question.choices.filter(c => c.is_correct).map((choice, index) => (
                 <li key={index}>{choice.text}</li>
@@ -207,49 +324,90 @@ function MultipleChoiceQuestion({
   })
 
   return (
-    <div 
-      className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-4"
-      onKeyDown={(e) => handleKeyDown(e, question.id)}
-      tabIndex={0}
-    >
-      {/* {isMultipleCorrect && <p className="text-sm text-muted-foreground mt-2">Select all correct answers</p>} */}
-      {shuffledChoices.map((choice, index) => {
-        const isSelected = questionAnswers.includes(choice.text)
-        const showResult = submitted
-        const isCorrect = choice.is_correct
-
-        let styles = "border-zinc-200 hover:border-[#f45844] hover:bg-[#f45844]/5"
-        if (isSelected) {
-          styles = "border-[#f45844] bg-[#f45844]/5"
-        }
-        if (showResult && isCorrect) {
-          styles = "border-green-500 bg-green-50"
-        }
-
-        return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-4">
+      {shuffledChoices.length === 1 ? (
+        <div className="col-span-full sm:col-span-2 mx-auto">
           <div
-            key={index}
-            className={`relative flex items-center p-2 sm:p-5 rounded-lg border-2 transition-colors ${styles}`}
-            onClick={() => !submitted && handleAnswerChange(question.id, choice.text, isMultipleCorrect)}
+            key={0}
+            className={`relative flex items-center p-2 sm:p-4 rounded-lg border-4 transition-colors ${
+              questionAnswers.includes(shuffledChoices[0].text) ? "border-[#f45844] bg-[#f45844]/5" :
+              submitted && shuffledChoices[0].is_correct ? "border-green-500 bg-green-50" :
+              "border-zinc-200 hover:border-[#f45844] hover:bg-[#f45844]/5"
+            } cursor-pointer`}
+            onClick={() => handleAnswerChange(question.id, shuffledChoices[0].text, isMultipleCorrect)}
+            role="button"
+            tabIndex={0}
           >
             <input
               type="checkbox"
-              id={`q${question.id}-${index}`}
-              checked={isSelected}
-              onChange={() => {}}
+              id={`q${question.id}-0`}
+              checked={questionAnswers.includes(shuffledChoices[0].text)}
+              onChange={(e) => handleAnswerChange(question.id, shuffledChoices[0].text, isMultipleCorrect)}
               disabled={submitted}
-              className="absolute left-3 top-1/2 -translate-y-1/2 border-2 border-zinc-300 group-hover:border-[#f45844]"
+              className="absolute left-3 top-1/2 -translate-y-1/2 border-2 border-zinc-300 group-hover:border-[#f45844] cursor-pointer"
             />
             <Label
-              htmlFor={`q${question.id}-${index}`}
-              className="pl-8 py-0 sm:py-2 text-sm font-medium text-zinc-700 cursor-pointer flex-grow"
+              htmlFor={`q${question.id}-0`}
+              className="pl-8 py-0 sm:py-2 text-sm font-medium text-zinc-700 cursor-pointer flex-grow select-none"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleAnswerChange(question.id, shuffledChoices[0].text, isMultipleCorrect)
+              }}
             >
-              {choice.text}
+              {shuffledChoices[0].text}
             </Label>
           </div>
-        )
-      })}
-      
+        </div>
+      ) : (
+        shuffledChoices.map((choice, index) => {
+          const isSelected = questionAnswers.includes(choice.text)
+          const showResult = submitted
+          const isCorrect = choice.is_correct
+
+          let styles = "border-zinc-200 hover:border-[#f45844] hover:bg-[#f45844]/5"
+          if (isSelected) {
+            styles = "border-[#f45844] bg-[#f45844]/5"
+          }
+          if (showResult && isCorrect) {
+            styles = "border-green-500 bg-green-50"
+          }
+
+          const handleClick = () => {
+            if (!submitted) {
+              handleAnswerChange(question.id, choice.text, isMultipleCorrect)
+            }
+          }
+
+          return (
+            <div
+              key={index}
+              className={`relative flex items-center p-2 sm:p-4 rounded-lg border-4 transition-colors ${styles} cursor-pointer`}
+              onClick={handleClick}
+              role="button"
+              tabIndex={0}
+            >
+              <input
+                type="checkbox"
+                id={`q${question.id}-${index}`}
+                checked={isSelected}
+                onChange={handleClick}
+                disabled={submitted}
+                className="absolute left-3 top-1/2 -translate-y-1/2 border-2 border-zinc-300 group-hover:border-[#f45844] cursor-pointer"
+              />
+              <Label
+                htmlFor={`q${question.id}-${index}`}
+                className="pl-8 py-0 sm:py-2 text-sm font-medium text-zinc-700 cursor-pointer flex-grow select-none"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleClick()
+                }}
+              >
+                {choice.text}
+              </Label>
+            </div>
+          )
+        })
+      )}
     </div>
   )
 }
@@ -259,6 +417,7 @@ function OpenTextQuestion({
   userAnswerText = '',
   handleTextAnswerChange,
   handleKeyDown,
+  onQuestionKeyPress,
   submitted,
   autoCompleteMatch,
   correctAnswers,
@@ -271,7 +430,15 @@ function OpenTextQuestion({
         type="text"
         value={userAnswerText || ''}
         onChange={(e) => handleTextAnswerChange(question.id, e.target.value)}
-        onKeyDown={(e) => handleKeyDown(e, question.id)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            e.stopPropagation()
+            onQuestionKeyPress(question.id)
+          } else {
+            handleKeyDown(e, question.id)
+          }
+        }}
         disabled={submitted}
         className={`w-full p-4 border-2 rounded-lg focus:border-[#f45844] focus:ring-[#f45844] ${
           submitted && evaluationResult
@@ -289,7 +456,7 @@ function OpenTextQuestion({
         </div>
       )}
 
-      {showCorrectAnswers && (
+      {(showCorrectAnswers || !question.choices.some(choice => !choice.is_correct)) && (
         <div className="mt-4 p-4 bg-[#fff5f4] border border-[#f45844]/20 rounded-md">
           <div className="flex items-start">
             <span className="mr-2">✨</span>

@@ -276,9 +276,7 @@
       "Answers will vary. [District of Columbia residents and residents of U.S. territories should answer that D.C. (or the territory where the applicant lives) has no U.S. Senators.]"
     ],
     "incorrect_answers": [
-      "The Speaker of the House",
-      "The Vice President",
-      "The Chief Justice"
+
     ],
     "hint": "Check current representatives for your state."
   },
@@ -315,9 +313,7 @@
       "Answers will vary. [Residents of territories with nonvoting Delegates or Resident Commissioners may provide the name of that Delegate or Commissioner. Also acceptable is any statement that the territory has no (voting) Representatives in Congress.]"
     ],
     "incorrect_answers": [
-      "Barack Obama",
-      "George Washington",
-      "Abraham Lincoln"
+
     ],
     "hint": "Check your local district's current representative."
   },
@@ -606,9 +602,7 @@
       "Answers will vary. [District of Columbia residents should answer that D.C. does not have a Governor.]"
     ],
     "incorrect_answers": [
-      "Chief Justice",
-      "Vice President",
-      "Speaker of the House"
+
     ],
     "hint": "It's the leader of your state, not the country."
   },
@@ -619,9 +613,6 @@
       "Answers will vary.  [District of Columbia residents should answer that D.C. is not a state and does not have a capital.  Residents of U.S. territories should name the capital of the territory.]"
     ],
     "incorrect_answers": [
-      "New York City",
-      "Los Angeles",
-      "Chicago"
     ],
     "hint": "It's the city where your state government is based."
   },
@@ -1462,7 +1453,7 @@
   },
   {
     "question_number": 100,
-    "question_text": "Nametwonational U.S. holidays.",
+    "question_text": "Name two national U.S. holidays.",
     "answers": [
       "New Year\u2019s Day",
       "Martin Luther King, Jr. Day",

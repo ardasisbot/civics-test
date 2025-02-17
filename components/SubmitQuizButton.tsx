@@ -19,7 +19,7 @@ export function SubmitQuizButton({
   return (
     <Button
       onClick={handleClick}
-      className="bg-[#f45844] hover:bg-[#f45844]/90 text-white"
+      className="bg-[#3C3B6E] hover:bg-[#3C3B6E]/90 text-white"
       disabled={evaluating}
     >
       {evaluating ? (

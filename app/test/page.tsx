@@ -8,6 +8,7 @@ import { Question, Choice, OpenTextMode, MultipleChoiceMode } from '@/types/ques
 import questionsData from '@/output/questions_with_hints.json'
 import { Question as QuestionComponent } from '@/components/Question'
 import { Review } from '@/components/Review'
+import { clear } from 'console';
 
 // Type for tracking user answers
 type UserAnswers = {
@@ -74,6 +75,7 @@ export default function Test() {
   // Load or shuffle questions
   const loadQuestions = useCallback(async () => {
     setLoading(true)
+    setShowReview(false)
     try {
       // In your real code, you'd do your own formatting logic here
       const formattedQuestions = questionsData.map(q => {
@@ -147,9 +149,10 @@ export default function Test() {
           const correctAnswers = question.choices
             .filter(choice => choice.is_correct)
             .map(choice => choice.text)
+          const hasIncorrectAnswers = question.choices.some(choice => !choice.is_correct)
           
-          if (isDefinitelyCorrect(userAnswer, correctAnswers)) {
-            // If we're sure it's correct, add to results immediately
+          if (isDefinitelyCorrect(userAnswer, correctAnswers) || !hasIncorrectAnswers) {
+            // If we're sure it's correct or there are no incorrect answers, add to results immediately
             results[question.id] = {
               is_correct: true,
               explanation: "Correct answer"
@@ -288,9 +291,10 @@ export default function Test() {
     setSkippedQuestions([])
     setShowingSkipped(false)
 
-    localStorage.removeItem('userAnswers')
-    localStorage.removeItem('quizSubmitted')
-    localStorage.removeItem('quizScore')
+    // localStorage.removeItem('userAnswers')
+    // localStorage.removeItem('quizSubmitted')
+    // localStorage.removeItem('quizScore')
+    // clearQuiz()
 
     // Reload fresh questions
     loadQuestions()
@@ -310,6 +314,20 @@ export default function Test() {
     return null
   }
 
+  // Skipping
+  const [skippedQuestions, setSkippedQuestions] = useState<string[]>([])
+  const [showingSkipped, setShowingSkipped] = useState(false)
+
+  const handleSkipQuestion = (questionId: string, goNext: boolean = false) => {
+    setSkippedQuestions(prev =>
+      prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
+    )
+
+    if (goNext && isPaginatedView && !isLastQuestion) {
+      goToNextQuestion()
+    }
+  }
+
   const handleQuestionKeyPress = useCallback(
     (questionId: string) => {
       // Skip if no answer provided
@@ -325,22 +343,8 @@ export default function Test() {
         goToNextQuestion()
       }
     },
-    [userAnswers, isLastQuestion]
+    [userAnswers, isLastQuestion, handleSkipQuestion, goToNextQuestion]
   )
-
-  // Skipping
-  const [skippedQuestions, setSkippedQuestions] = useState<string[]>([])
-  const [showingSkipped, setShowingSkipped] = useState(false)
-
-  const handleSkipQuestion = (questionId: string, goNext: boolean = false) => {
-    setSkippedQuestions(prev =>
-      prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
-    )
-
-    if (goNext && isPaginatedView && !isLastQuestion) {
-      goToNextQuestion()
-    }
-  }
 
   useEffect(() => {
     const savedSkipped = getLocalStorage('skippedQuestions')
@@ -374,15 +378,14 @@ export default function Test() {
     handleAnswerChange,
     handleTextAnswerChange,
     handleKeyDown: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => {
+      // Only handle Tab key for autocomplete
       if (e.key === 'Tab' && autoCompleteMatch) {
         e.preventDefault()
         handleTextAnswerChange(questionId, autoCompleteMatch)
         setAutoCompleteMatch(null)
-      } else if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        handleQuestionKeyPress(questionId)
       }
     },
+    onQuestionKeyPress: handleQuestionKeyPress,
     autoCompleteMatch,
     onSkipQuestion: handleSkipQuestion,
     skippedQuestions,
