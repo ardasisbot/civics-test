@@ -1,111 +1,13 @@
+"use client"
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Question as QuestionType } from '@/types/question';
 import { MultipleChoiceMode } from '@/types/question';
-import { Card, CardTitle, CardHeader, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import {Label} from "@/components/ui/label"
-import {Input} from "@/components/ui/input"
-import Image from 'next/image'
-import { Badge } from "@/components/ui/badge"
-
-// Add NUMBER_WORDS constant
-const NUMBER_WORDS: { [key: string]: string } = {
-  'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5',
-  'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
-  'eleven': '11', 'twelve': '12', 'thirteen': '13', 'fourteen': '14',
-  'fifteen': '15', 'sixteen': '16', 'seventeen': '17', 'eighteen': '18',
-  'nineteen': '19', 'twenty': '20', 'thirty': '30', 'forty': '40',
-  'fifty': '50', 'sixty': '60', 'seventy': '70', 'eighty': '80',
-  'ninety': '90'
-};
-
-// Add helper functions
-const convertNumberWords = (text: string): string => {
-  let result = text.toLowerCase();
-  
-  // Handle compound numbers (e.g., "twenty-seven", "thirty five")
-  const compoundRegex = new RegExp(
-    `(${Object.keys(NUMBER_WORDS).join('|')})[-\\s]+(${Object.keys(NUMBER_WORDS).join('|')})`,
-    'gi'
-  );
-  
-  result = result.replace(compoundRegex, (match, tens, ones) => {
-    const tensNum = parseInt(NUMBER_WORDS[tens.toLowerCase()]);
-    const onesNum = parseInt(NUMBER_WORDS[ones.toLowerCase()]);
-    
-    if (tensNum % 10 === 0 && tensNum <= 90) {
-      return (tensNum + onesNum).toString();
-    }
-    return match;
-  });
-
-  // Handle single number words
-  const singleRegex = new RegExp(`\\b(${Object.keys(NUMBER_WORDS).join('|')})\\b`, 'gi');
-  result = result.replace(singleRegex, match => NUMBER_WORDS[match.toLowerCase()] || match);
-
-  return result;
-};
-
-const normalizeText = (text: string): string => {
-  return text
-    .toLowerCase()
-    .trim()
-    // Convert number words to digits
-    .split(/\s+/)
-    .map(word => convertNumberWords(word))
-    .join(' ')
-    // Remove parenthetical content and special characters
-    .replace(/\([^)]*\)/g, '')
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
-
-// Define the evaluation result type once
-type EvaluationResult = {
-  is_correct: boolean;
-  explanation?: string;  // Make explanation optional
-}
-
-interface BaseQuestionProps {
-  question: QuestionType
-  submitted: boolean
-  questionNumber?: number
-  totalQuestions?: number
-  onSkipQuestion?: (questionId: string, goToNext?: boolean) => void
-  skippedQuestions?: string[]
-  evaluationResult?: EvaluationResult
-}
-
-interface QuestionProps extends BaseQuestionProps {
-  isMultipleChoice: boolean
-  userAnswers: { [key: string]: string[] | string }
-  handleAnswerChange: (questionId: string, choiceText: string, isMultipleCorrect: boolean) => void
-  handleTextAnswerChange: (questionId: string, value: string) => void
-  handleKeyDown: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => void
-  autoCompleteMatch: string | null
-  showCorrectAnswers?: boolean
-  correctAnswers?: string[]
-}
-
-interface MultipleChoiceQuestionProps {
-  question: QuestionType
-  userAnswers: { [key: string]: string[] }
-  handleAnswerChange: (questionId: string, choiceText: string, isMultipleCorrect: boolean) => void
-  handleKeyDown: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => void
-  submitted: boolean
-  isAnswerShown: boolean
-}
-
-// Remove evaluationResult from OpenTextQuestionProps since it's included in BaseQuestionProps
-interface OpenTextQuestionProps extends BaseQuestionProps {
-  userAnswerText: string
-  handleTextAnswerChange: (questionId: string, value: string) => void
-  handleKeyDown: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => void
-  autoCompleteMatch: string | null
-  correctAnswers: string[]
-  showCorrectAnswers?: boolean
-}
+import { Card, CardTitle, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import Image from 'next/image';
+import { Badge } from "@/components/ui/badge";
 
 export function Question({
   question,
@@ -124,17 +26,16 @@ export function Question({
   showCorrectAnswers,
   correctAnswers,
 }: QuestionProps) {
-  const [isHintShown, setIsHintShown] = useState(false)
-  const [isAnswerShown, setIsAnswerShown] = useState(false)
+  const [isHintShown, setIsHintShown] = useState(false);
+  const [isAnswerShown, setIsAnswerShown] = useState(false);
 
-  // Add logging
   useEffect(() => {
     if (submitted) {
       console.log(`Question ${question.id} evaluation:`, {
         submitted,
         evaluationResult,
         userAnswer: userAnswers[question.id],
-        correctAnswers: question.choices.filter(c => c.is_correct).map(c => c.text)
+        correctAnswers: question.choices.filter(c => c.is_correct).map(c => c.text),
       });
     }
   }, [submitted, evaluationResult, question.id, userAnswers, question.choices]);
@@ -150,7 +51,7 @@ export function Question({
           submitted={submitted}
           isAnswerShown={isAnswerShown}
         />
-      )
+      );
     }
 
     return (
@@ -164,29 +65,50 @@ export function Question({
         correctAnswers={question.choices.filter(c => c.is_correct).map(c => c.text)}
         showCorrectAnswers={showCorrectAnswers}
       />
-    )
-  }
+    );
+  };
 
   return (
-    <Card className="w-full bg-[#faf9f7] border-4 shadow-lg m-5 px-10 mx-10">
-      <CardHeader className="pb-4">
+    <Card className="w-full bg-[#faf9f7] border-2 shadow-lg mx-1 p-5 sm:p-6">
+<CardHeader className="pb-0 sm:pb-4">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-sm">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/us_flag_icon.png"
-              alt="US Flag"
-              width={20}
-              height={20}
-              className="object-contain"
-            />
-            <span className="text-zinc-600">U.S. Civics Test</span>
+          <div className="flex items-center justify-between ">
+            <div className="flex items-center gap-2">
+              <Image
+                src="/us_flag_icon.png"
+                alt="US Flag"
+                width={20}
+                height={20}
+                className="object-contain"
+              />
+              <span className="text-zinc-600">U.S. Civics Test</span>
+              
+            </div>
+            {questionNumber && totalQuestions && (
+            <span className="text-zinc-600 sm:hidden">
+              {questionNumber} of {totalQuestions}
+            </span>
+            
+          )}
+          <div className="sm:hidden">
+          {submitted && evaluationResult && (
+              <Badge className={
+                evaluationResult.is_correct 
+                  ? "bg-green-600 text-white hover:bg-green-700" 
+                  : "bg-red-500 text-white hover:bg-red-600"
+              }>
+                {evaluationResult.is_correct ? "Correct" : "Incorrect"}
+              </Badge>
+            )}
+            </div>
           </div>
+          <div/>
           {questionNumber && totalQuestions && (
-            <span className="text-zinc-600 order-first sm:order-none">
+            <span className="text-zinc-600 hidden sm:block">
               Question {questionNumber} of {totalQuestions}
             </span>
           )}
-          <div className="flex flex-wrap gap-2 justify-end">
+          <div className="flex flex-wrap gap-2 justify-end hidden sm:block">
             {submitted && evaluationResult && (
               <Badge className={
                 evaluationResult.is_correct 
@@ -196,8 +118,8 @@ export function Question({
                 {evaluationResult.is_correct ? "Correct" : "Incorrect"}
               </Badge>
             )}
-            <div className="flex flex-wrap gap-2">
-              {question.hint && (
+            <div className="flex flex-wrap gap-2 pb-5 sm:pb-0">
+              {!submitted && question.hint && (
                 <Button onClick={() => setIsHintShown(!isHintShown)} variant="outline" size="sm">
                   {isHintShown ? "Hide Hint" : "Show Hint"}
                 </Button>
@@ -227,60 +149,44 @@ export function Question({
         </div>
       </CardHeader>
 
+
       <CardContent className="space-y-8">
-        <div className="space-y-4 px-4">
-          <p className="text-lg font-medium leading-snug text-zinc-800">{question.text}</p>
-          
-          <div className="flex items-start min-h-[2rem]">
-            {isHintShown && question.hint && (
-              <>
-                {console.log('Showing hint for question', question.id, ':', question.hint)}
-                <span className="mr-2 mb-5">💡</span>
-                <p className="text-sm text-zinc-600 italic">{question.hint}</p>
-              </>
-            )}
+
+        <p className="text-lg font-medium text-zinc-800 pb-0 sm:pb-6">{question.text}</p>
+
+        {isHintShown && question.hint && (
+          <div className="flex items-start p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded-md">
+            <span className="mr-2">💡</span>
+            <p className="text-sm text-zinc-600">{question.hint}</p>
           </div>
-          {submitted && evaluationResult && (
-        <div className={`mt-2 p-2 rounded-md ${
-          evaluationResult.is_correct ? 'bg-green-100' : 'bg-red-100'
-        }`}>
-          <p className="text-sm font-medium">
+        )}
+
+        {!isMultipleChoice && submitted && evaluationResult && (
+          <div className={`p-2 rounded-md text-sm font-medium ${
+            evaluationResult.is_correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}>
             {evaluationResult.is_correct ? '✓ Correct' : '✗ Incorrect'}
-          </p>
-          {evaluationResult.explanation && (
-            <>
-              
-              <p className="text-sm mt-1 text-gray-600">
-                {evaluationResult.explanation}
-              </p>
-            </>
-          )}
-        </div>
-      )}
-          {isAnswerShown && !submitted && (
-            <div className="p-3 bg-[#fff5f4] border border-[#f45844]/20 rounded-md">
-              <div className="flex items-start">
-                <span className="mr-2">✨</span>
-                <div className="text-sm text-[#f45844]">
-                  <p className="font-medium mb-1">
-                    Correct Answer{question.choices.filter(c => c.is_correct).length > 1 ? 's' : ''}:
-                  </p>
-                  <ul className="list-disc pl-5">
-                    {question.choices
-                      .filter(choice => choice.is_correct)
-                      .map((choice, index) => (
-                        <li key={index}>{choice.text}</li>
-                      ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+            {evaluationResult.explanation && <p className="text-gray-600 mt-1">{evaluationResult.explanation}</p>}
+          </div>
+        )}
+
+        {isAnswerShown && !submitted && (
+          <div className="p-3 bg-[#fff5f4] border border-[#f45844]/20 rounded-md">
+            <p className="font-medium text-[#f45844]">Correct Answer(s):</p>
+            <ul className="list-disc pl-5 text-sm text-[#f45844]">
+              {question.choices.filter(c => c.is_correct).map((choice, index) => (
+                <li key={index}>{choice.text}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {renderAnswers()}
+         
       </CardContent>
+     
     </Card>
-  )
+  );
 }
 
 function MultipleChoiceQuestion({ 
@@ -323,7 +229,7 @@ function MultipleChoiceQuestion({
         return (
           <div
             key={index}
-            className={`relative flex items-center p-4 rounded-lg border-2 transition-colors ${styles}`}
+            className={`relative flex items-center p-2 sm:p-5 rounded-lg border-2 transition-colors ${styles}`}
             onClick={() => !submitted && handleAnswerChange(question.id, choice.text, isMultipleCorrect)}
           >
             <input
@@ -336,7 +242,7 @@ function MultipleChoiceQuestion({
             />
             <Label
               htmlFor={`q${question.id}-${index}`}
-              className="pl-8 py-2 text-sm font-medium text-zinc-700 cursor-pointer flex-grow"
+              className="pl-8 py-0 sm:py-2 text-sm font-medium text-zinc-700 cursor-pointer flex-grow"
             >
               {choice.text}
             </Label>

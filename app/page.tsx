@@ -10,7 +10,7 @@ export default function Home() {
       <main className="">
         {/* Hero Section with GlitchingFlag */}
         <section className="flex flex-col items-center my-20">
-          <div className="w-full mt-10 max-w-2xl mx-auto">
+          <div className="w-full mt-10 max-w-2xl mx-auto px-4 sm:px-0">
             <GlitchingFlag />
           </div>
           <h2 className="text-3xl font-bold mb-4 text-center mt-10">Take the U.S. Civics Practice Test</h2>

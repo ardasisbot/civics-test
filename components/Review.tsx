@@ -24,21 +24,6 @@ export function Review({
   const router = useRouter()
 
   const getActionButton = () => {
-    // if (mode === 'sample' && score > 80) {
-    //   return (
-    //     <Button
-    //       onClick={() => {
-    //         onClearQuiz()
-    //         router.push('/test?mode=full')
-    //       }}
-    //       variant="default"
-    //       className="font-semibold"
-    //     >
-    //       Take the Full Test →
-    //     </Button>
-    //   )
-    // }
-
     
       return (
         <div className="flex gap-4">
@@ -77,7 +62,7 @@ export function Review({
   }
 
   return (
-    <Card className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+    <Card className="mb-8 p-0 sm:p-5 bg-gradient-to-r from-blue-50 to-indigo-50">
       <div className="space-y-6">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -91,7 +76,7 @@ export function Review({
           </p>
         </div>
         
-        <div className="flex justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 ">
           {getActionButton()}
           <Button
             onClick={onReviewClick}

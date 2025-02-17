@@ -100,19 +100,6 @@ export function Toggles() {
         </AlertDialog>
       </div>
 
-      {/* View Mode Controls */}
-      {/* <div className="flex items-center space-x-2">
-        <Link href={`/test?mode=${mode}&view=${view === 'paginated' ? 'all' : 'paginated'}&answerType=${answerType}`}>
-          <Switch
-            checked={view === 'paginated'}
-            id="view-mode"
-          />
-        </Link>
-        <Label htmlFor="view-mode" className="text-sm">
-          {view === 'paginated' ? 'Question by Question' : 'All Questions'}
-        </Label>
-      </div> */}
-
       {/* Answer Type Controls */}
       <div className="flex items-center space-x-2">
         <HoverCard>
@@ -141,61 +128,7 @@ export function Toggles() {
         </HoverCard>
       </div>
 
-      {/* Review Missed Questions Toggle */}
-      <div className="flex items-center space-x-2">
-        <HoverCard>
-          <HoverCardTrigger asChild>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={reviewMissed}
-                onCheckedChange={handleMissedStateChange}
-                id="review-missed"
-              />
-              <Label htmlFor="review-missed" className="text-sm cursor-help">
-                Review Missed
-              </Label>
-            </div>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-80">
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold">Review Mode</h4>
-              <p className="text-sm">
-                Focus on questions you haven't answered correctly yet. 
-                Perfect for targeting your weak spots and improving your score.
-              </p>
-            </div>
-          </HoverCardContent>
-        </HoverCard>
 
-        <AlertDialog open={showMissedAlert} onOpenChange={setShowMissedAlert}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {reviewMissed ? 'Disable Review Missed?' : 'Enable Review Missed?'}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {reviewMissed 
-                  ? 'This will clear your missed questions history.'
-                  : 'This will only show questions you haven\'t answered correctly yet.'}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => {
-                if (!reviewMissed) {
-                  router.push(`/test?mode=${mode}&view=${view}&answerType=${answerType}&reviewMissed=true`)
-                } else {
-                  localStorage.removeItem('missedQuestions')
-                  router.push(`/test?mode=${mode}&view=${view}&answerType=${answerType}`)
-                }
-                setShowMissedAlert(false)
-              }}>
-                Continue
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
     </div>
   )
 } 

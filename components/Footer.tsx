@@ -4,7 +4,7 @@ export default function Footer() {
       <div className="container-wrapper">
         <div className="container py-4">
           <div className="flex flex-col gap-2 text-center text-sm text-muted-foreground md:text-left">
-            <p className="text-balance leading-loose">
+            <p className="text-left leading-loose">
               Built by{" "}
               <a
                 href={'https://x.com/asisbot'}
@@ -25,7 +25,7 @@ export default function Footer() {
               </a>
               .
             </p>
-            <p className="text-xs">
+            <p className="text-left text-xs">
               This is not an official USCIS application. Use at your own risk. 
               For issues or updates, DM{" "}
               <a

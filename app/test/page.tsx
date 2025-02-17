@@ -128,46 +128,69 @@ export default function Test() {
     }
   }, [userAnswers, submitted, score])
 
-  // Evaluate answers (with artificial delay for testing)
+  // Helper function to check if an answer is definitely correct
+  const isDefinitelyCorrect = (userAnswer: string, correctAnswers: string[]): boolean => {
+    return correctAnswers.some(answer => 
+      answer.toLowerCase() === userAnswer?.toLowerCase()
+    )
+  }
+
   const evaluateAnswers = async () => {
     try {
-      // Optional: Add artificial delay for testing
-      // await new Promise(resolve => setTimeout(resolve, 3000))
-
       if (!isMultipleChoice) {
-        // If open-text (answerType = 'open'), do your custom check
-        const openTextAnswers = questions.map(question => ({
-          question_text: question.text,
-          user_answer: userAnswers[question.id] as string,
-          correct_answers: question.choices
-            .filter(choice => choice.is_correct)
-            .map(choice => choice.text),
-        }))
-
-        const response = await fetch('/api/evaluateQuiz', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(openTextAnswers),
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to evaluate quiz')
-        }
-
-        const evaluations = await response.json()
         const results: EvaluationResults = {}
+        const needsEvaluation: any[] = []
 
-        evaluations.forEach((entry: any) => {
-          const question = questions.find(q => q.text === entry.question_text)
-          if (question) {
+        // First pass: check for definite correct answers
+        questions.forEach(question => {
+          const userAnswer = userAnswers[question.id] as string
+          const correctAnswers = question.choices
+            .filter(choice => choice.is_correct)
+            .map(choice => choice.text)
+          
+          if (isDefinitelyCorrect(userAnswer, correctAnswers)) {
+            // If we're sure it's correct, add to results immediately
             results[question.id] = {
-              is_correct: entry.is_correct,
-              explanation:
-                entry.explanation ||
-                (entry.is_correct ? "Correct answer" : "Incorrect answer")
+              is_correct: true,
+              explanation: "Correct answer"
             }
+          } else {
+            // If we're not sure, add to list for API evaluation
+            needsEvaluation.push({
+              question_text: question.text,
+              user_answer: userAnswer,
+              correct_answers: correctAnswers,
+            })
           }
         })
+
+        // Only call API for answers we're not sure about
+        if (needsEvaluation.length > 0) {
+          console.log('Sending to API for evaluation:', needsEvaluation)
+          
+          const response = await fetch('/api/evaluateQuiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(needsEvaluation),
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to evaluate quiz')
+          }
+
+          const evaluations = await response.json()
+          console.log('API evaluation results:', evaluations)
+
+          evaluations.forEach((entry: any) => {
+            const question = questions.find(q => q.text === entry.question_text)
+            if (question) {
+              results[question.id] = {
+                is_correct: entry.is_correct,
+                explanation: entry.explanation || (entry.is_correct ? "Correct answer" : "Incorrect answer")
+              }
+            }
+          })
+        }
 
         setEvaluationResults(results)
         const correctCount = Object.values(results).filter(r => r.is_correct).length
@@ -175,7 +198,7 @@ export default function Test() {
         setSubmitted(true)
 
       } else {
-        // Multiple-choice evaluation
+        // Multiple choice evaluation
         const results: EvaluationResults = {}
         questions.forEach(question => {
           const userAnswer = userAnswers[question.id]
@@ -481,9 +504,9 @@ export default function Test() {
   }
 
   return (
-    <main className="container mx-auto p-4 pt-20 max-w-[1200px]">
+    <main className="container mx-auto p-2 sm:p-4 pt-10 max-w-[1200px]">
       {/* e.g. Show question count */}
-      <div className="text-sm text-gray-600 mb-4">
+      <div className="hidden sm:block text-sm text-gray-600 mb-4 px-2 sm:px-0">
         Showing {questions.length} question
         {questions.length !== 1 ? 's' : ''}
       </div>
@@ -502,7 +525,7 @@ export default function Test() {
 
       <div 
         ref={questionsRef} 
-        className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8"
+        className="w-full max-w-4xl mx-auto px-1 sm:px-1 lg:px-8"
       >
         {renderQuestions()}
       </div>
