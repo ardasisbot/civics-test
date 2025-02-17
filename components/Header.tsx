@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Toggles } from "./Toggles";
 import { Github, Menu, X } from "lucide-react";
-import { ModeToggle } from "./mode-toggle";
+import { ModeToggle } from "./ModeToggle";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

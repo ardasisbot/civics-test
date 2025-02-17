@@ -10,59 +10,6 @@ import Image from 'next/image';
 import { Badge } from "@/components/ui/badge";
 
 
-// Add NUMBER_WORDS constant
-const NUMBER_WORDS: { [key: string]: string } = {
-  'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5',
-  'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
-  'eleven': '11', 'twelve': '12', 'thirteen': '13', 'fourteen': '14',
-  'fifteen': '15', 'sixteen': '16', 'seventeen': '17', 'eighteen': '18',
-  'nineteen': '19', 'twenty': '20', 'thirty': '30', 'forty': '40',
-  'fifty': '50', 'sixty': '60', 'seventy': '70', 'eighty': '80',
-  'ninety': '90'
-};
-
-// Add helper functions
-const convertNumberWords = (text: string): string => {
-  let result = text.toLowerCase();
-  
-  // Handle compound numbers (e.g., "twenty-seven", "thirty five")
-  const compoundRegex = new RegExp(
-    `(${Object.keys(NUMBER_WORDS).join('|')})[-\\s]+(${Object.keys(NUMBER_WORDS).join('|')})`,
-    'gi'
-  );
-  
-  result = result.replace(compoundRegex, (match, tens, ones) => {
-    const tensNum = parseInt(NUMBER_WORDS[tens.toLowerCase()]);
-    const onesNum = parseInt(NUMBER_WORDS[ones.toLowerCase()]);
-    
-    if (tensNum % 10 === 0 && tensNum <= 90) {
-      return (tensNum + onesNum).toString();
-    }
-    return match;
-  });
-
-  // Handle single number words
-  const singleRegex = new RegExp(`\\b(${Object.keys(NUMBER_WORDS).join('|')})\\b`, 'gi');
-  result = result.replace(singleRegex, match => NUMBER_WORDS[match.toLowerCase()] || match);
-
-  return result;
-};
-
-const normalizeText = (text: string): string => {
-  return text
-    .toLowerCase()
-    .trim()
-    // Convert number words to digits
-    .split(/\s+/)
-    .map(word => convertNumberWords(word))
-    .join(' ')
-    // Remove parenthetical content and special characters
-    .replace(/\([^)]*\)/g, '')
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
-
 // Define the evaluation result type once
 type EvaluationResult = {
   is_correct: boolean;
@@ -82,10 +29,10 @@ interface BaseQuestionProps {
 interface QuestionProps extends BaseQuestionProps {
   isMultipleChoice: boolean
   userAnswers: { [key: string]: string[] | string }
-  handleAnswerChange: (questionId: string, choiceText: string, isMultipleCorrect: boolean) => void
-  handleTextAnswerChange: (questionId: string, value: string) => void
-  handleKeyDown: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => void
-  onQuestionKeyPress: (questionId: string) => void
+  handleAnswerChangeAction: (questionId: string, choiceText: string, isMultipleCorrect: boolean) => void
+  handleTextAnswerChangeAction: (questionId: string, value: string) => void
+  handleKeyDownAction: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => void
+  onQuestionKeyPressAction: (questionId: string) => void
   autoCompleteMatch: string | null
   showCorrectAnswers?: boolean
   correctAnswers?: string[]
@@ -116,10 +63,10 @@ export function Question({
   isMultipleChoice,
   submitted,
   userAnswers,
-  handleAnswerChange,
-  handleTextAnswerChange,
-  handleKeyDown,
-  onQuestionKeyPress,
+  handleAnswerChangeAction,
+  handleTextAnswerChangeAction,
+  handleKeyDownAction,
+  onQuestionKeyPressAction,
   autoCompleteMatch,
   questionNumber,
   totalQuestions,
@@ -147,7 +94,7 @@ export function Question({
   const handleCardKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (isMultipleChoice && e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      onQuestionKeyPress(question.id)
+      onQuestionKeyPressAction(question.id)
     }
   }
 
@@ -157,8 +104,8 @@ export function Question({
         <MultipleChoiceQuestion
           question={question}
           userAnswers={userAnswers as { [key: string]: string[] }}
-          handleAnswerChange={handleAnswerChange}
-          handleKeyDown={handleKeyDown}
+          handleAnswerChange={handleAnswerChangeAction}
+          handleKeyDown={handleKeyDownAction}
           submitted={submitted}
           isAnswerShown={isAnswerShown}
         />
@@ -169,9 +116,9 @@ export function Question({
       <OpenTextQuestion
         question={question}
         userAnswerText={userAnswers[question.id] as string}
-        handleTextAnswerChange={handleTextAnswerChange}
-        handleKeyDown={handleKeyDown}
-        onQuestionKeyPress={onQuestionKeyPress}
+        handleTextAnswerChange={handleTextAnswerChangeAction}
+        handleKeyDown={handleKeyDownAction}
+        onQuestionKeyPress={onQuestionKeyPressAction}
         submitted={submitted}
         autoCompleteMatch={autoCompleteMatch}
         correctAnswers={question.choices.filter(c => c.is_correct).map(c => c.text)}

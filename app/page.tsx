@@ -1,6 +1,6 @@
 'use client'
 
-import GlitchingFlag from '@/components/flagAnimation'
+import GlitchingFlag from '@/components/FlagAnimation'
 import { TestButton } from '@/components/TestButton'
 
 export default function Home() {
@@ -13,7 +13,7 @@ export default function Home() {
             <GlitchingFlag />
           </div>
           <h2 className="text-3xl font-bold mb-4 text-center mt-10">Take the U.S. Civics Practice Test</h2>
-          <h3 className="text-muted-foreground font-bold text-center text-balance max-w-2xl mx-auto px-4 text-pretty">
+          <h3 className="text-muted-foreground font-bold text-center max-w-2xl mx-auto px-4 text-pretty">
             The U.S. Civics Test is comprised of <a 
               href="https://www.uscis.gov/sites/default/files/document/questions-and-answers/100q.pdf" 
               target="_blank" 

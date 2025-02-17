@@ -1,416 +1,95 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
-
-import { Question, Choice, OpenTextMode, MultipleChoiceMode } from '@/types/question'
-import questionsData from '@/output/questions_with_hints.json'
-import { Question as QuestionComponent } from '@/components/Question'
-import { Review } from '@/components/Review'
-import { clear } from 'console';
-
-// Type for tracking user answers
-type UserAnswers = {
-  [questionId: string]: string[] | string; // Can be array for multiple choice or string for open text
-};
-
-type EvaluationResults = {
-  [questionId: string]: {
-    is_correct: boolean;
-    explanation?: string;
-  };
-};
-
-const getLocalStorage = (key: string) => {
-  if (typeof window !== 'undefined') {
-    const item = localStorage.getItem(key)
-    return item ? JSON.parse(item) : null
-  }
-  return null
-}
+import { useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Question } from '@/components/Question';
+import { Review } from '@/components/Review';
+import { useQuizParams } from '@/hooks/useQuizParams';
+import { useQuiz } from '@/hooks/useQuizState'; // import the hook we created
+import { Question as QuestionType } from '@/types/question';
 
 export default function Test() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  
-  // Get all parameters from URL
-  const mode = searchParams.get('mode') || 'sample'
-  const view = searchParams.get('view') || 'paginated'
-  const answerType = searchParams.get('answerType') || 'easy'
+  const searchParams = useSearchParams();
+  const quizParams = useQuizParams(searchParams);
 
-  const isPaginatedView = view === 'paginated'
-  const isMultipleChoice = answerType === 'easy'
+  const {
+    questions,
+    userAnswers,
+    submitted,
+    score,
+    loading,
+    error,
+    currentQuestionIndex,
+    showReview,
+    evaluationResults,
+    evaluating,
+    skippedQuestions,
+    showingSkipped,
+    autoCompleteMatch,
 
-  // Core quiz state
-  const [questions, setQuestions] = useState<Question[]>([])
-  const [userAnswers, setUserAnswers] = useState<UserAnswers>(() => {
-    return getLocalStorage('userAnswers') || {}
-  })
-  const [submitted, setSubmitted] = useState(() => {
-    return getLocalStorage('quizSubmitted') || false
-  })
-  const [score, setScore] = useState<number | null>(() => {
-    return getLocalStorage('quizScore') || null
-  })
+    // Actions
+    handleAnswerChange,
+    handleTextAnswerChange,
+    handleEvaluate,
+    goToNextQuestion,
+    goToPreviousQuestion,
+    clearQuiz,
+    handleSkipQuestion,
+    handleQuestionKeyPress,
+    handleReviewClick,
+    handleReviewSkipped,
+  } = useQuiz(quizParams);
 
-  // UI state
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [showReview, setShowReview] = useState(false)
-  const questionsRef = useRef<HTMLDivElement>(null)
+  // Derived
+  const isMultipleChoice = quizParams.answerType === 'easy';
+  const isPaginatedView = quizParams.view === 'paginated';
 
-  // Navigation state
-  const currentQuestion = questions[currentQuestionIndex]
-  const isFirstQuestion = currentQuestionIndex === 0
-  const isLastQuestion = currentQuestionIndex === questions.length - 1
+  const questionsRef = useRef<HTMLDivElement>(null);
 
-  // Add state for evaluation results
-  const [evaluationResults, setEvaluationResults] = useState<EvaluationResults>({});
+  const currentQuestion = questions[currentQuestionIndex];
+  const isFirstQuestion = currentQuestionIndex === 0;
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
-  // Add loading state for evaluation
-  const [evaluating, setEvaluating] = useState(false)
-
-  // Load or shuffle questions
-  const loadQuestions = useCallback(async () => {
-    setLoading(true)
-    setShowReview(false)
-    try {
-      // In your real code, you'd do your own formatting logic here
-      const formattedQuestions = questionsData.map(q => {
-        const choices: Choice[] = [
-          ...q.answers.map(answer => ({ text: answer, is_correct: true })),
-          ...q.incorrect_answers.map(answer => ({ text: answer, is_correct: false }))
-        ]
-        const selectionRule = q.answers.length === 1 ? "single_correct" : "multiple_correct"
-        const minRequiredChoices = Math.max(4, q.answers.length)
-        
-        const openTextMode: OpenTextMode = { type: "open_text" }
-        const multipleChoiceMode: MultipleChoiceMode = {
-          type: "multiple_choice",
-          selection_rule: selectionRule,
-          randomize_choices: true,
-          num_choices: Math.min(minRequiredChoices, choices.length)
-        }
-        return new Question(
-          q.question_number.toString(),
-          q.question_text,
-          [openTextMode, multipleChoiceMode],
-          choices,
-          q.hint
-        )
-      })
-
-      if (mode === 'sample') {
-        const shuffled = [...formattedQuestions].sort(() => Math.random() - 0.5)
-        setQuestions(shuffled.slice(0, 5))
-      } else {
-        setQuestions(formattedQuestions)
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load questions')
-    } finally {
-      setLoading(false)
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLElement>,
+    questionId: string
+  ) => {
+    if (e.key === 'Tab' && autoCompleteMatch) {
+      e.preventDefault();
+      handleTextAnswerChange(questionId, autoCompleteMatch);
     }
-  }, [mode])
+  };
 
-  useEffect(() => {
-    loadQuestions()
-  }, [loadQuestions])
-
-  // Persist user data & quiz results in localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userAnswers', JSON.stringify(userAnswers))
-      localStorage.setItem('quizSubmitted', JSON.stringify(submitted))
-      if (score !== null) {
-        localStorage.setItem('quizScore', JSON.stringify(score))
-      }
-    }
-  }, [userAnswers, submitted, score])
-
-  // Helper function to check if an answer is definitely correct
-  const isDefinitelyCorrect = (userAnswer: string, correctAnswers: string[]): boolean => {
-    return correctAnswers.some(answer => 
-      answer.toLowerCase() === userAnswer?.toLowerCase()
-    )
-  }
-
-  const evaluateAnswers = async () => {
-    try {
-      if (!isMultipleChoice) {
-        const results: EvaluationResults = {}
-        const needsEvaluation: any[] = []
-
-        // First pass: check for definite correct answers
-        questions.forEach(question => {
-          const userAnswer = userAnswers[question.id] as string
-          const correctAnswers = question.choices
-            .filter(choice => choice.is_correct)
-            .map(choice => choice.text)
-          const hasIncorrectAnswers = question.choices.some(choice => !choice.is_correct)
-          
-          if (isDefinitelyCorrect(userAnswer, correctAnswers) || !hasIncorrectAnswers) {
-            // If we're sure it's correct or there are no incorrect answers, add to results immediately
-            results[question.id] = {
-              is_correct: true,
-              explanation: "Correct answer"
-            }
-          } else {
-            // If we're not sure, add to list for API evaluation
-            needsEvaluation.push({
-              question_text: question.text,
-              user_answer: userAnswer,
-              correct_answers: correctAnswers,
-            })
-          }
-        })
-
-        // Only call API for answers we're not sure about
-        if (needsEvaluation.length > 0) {
-          console.log('Sending to API for evaluation:', needsEvaluation)
-          
-          const response = await fetch('/api/evaluateQuiz', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(needsEvaluation),
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to evaluate quiz')
-          }
-
-          const evaluations = await response.json()
-          console.log('API evaluation results:', evaluations)
-
-          evaluations.forEach((entry: any) => {
-            const question = questions.find(q => q.text === entry.question_text)
-            if (question) {
-              results[question.id] = {
-                is_correct: entry.is_correct,
-                explanation: entry.explanation || (entry.is_correct ? "Correct answer" : "Incorrect answer")
-              }
-            }
-          })
-        }
-
-        setEvaluationResults(results)
-        const correctCount = Object.values(results).filter(r => r.is_correct).length
-        setScore((correctCount / questions.length) * 100)
-        setSubmitted(true)
-
-      } else {
-        // Multiple choice evaluation
-        const results: EvaluationResults = {}
-        questions.forEach(question => {
-          const userAnswer = userAnswers[question.id]
-          const isCorrect = question.evaluateAnswer(userAnswer, true)
-          results[question.id] = {
-            is_correct: isCorrect,
-            explanation: isCorrect ? "Correct answer selected" : "Incorrect answer selected",
-          }
-        })
-
-        setEvaluationResults(results)
-        const correctCount = Object.values(results).filter(r => r.is_correct).length
-        setScore((correctCount / questions.length) * 100)
-        setSubmitted(true)
-      }
-    } catch (error) {
-      console.error('Error evaluating quiz:', error)
-      alert('Failed to evaluate quiz. Please try again.')
-    }
-  }
-
-  /**
-   * Single place to handle "Start evaluation, set loading,
-   * then finish evaluation" logic.
-   */
-  const handleEvaluate = async () => {
-    setEvaluating(true)
-    try {
-      await evaluateAnswers()
-    } finally {
-      setEvaluating(false)
-    }
-  }
-
-  // Handle user answers
-  const handleAnswerChange = (questionId: string, choiceText: string, isMultipleCorrect: boolean) => {
-    setUserAnswers(prev => {
-      const currentAnswers = prev[questionId] || []
-      if (isMultipleCorrect) {
-        // For multiple-correct checkboxes, toggle the answer
-        return {
-          ...prev,
-          [questionId]: Array.isArray(currentAnswers)
-            ? currentAnswers.includes(choiceText)
-              ? currentAnswers.filter(a => a !== choiceText)
-              : [...currentAnswers, choiceText]
-            : [choiceText],
-        }
-      } else {
-        // Single correct: store array with one item
-        return { ...prev, [questionId]: [choiceText] }
-      }
-    })
-  }
-
-  const handleTextAnswerChange = (questionId: string, value: string) => {
-    setUserAnswers(prev => ({ ...prev, [questionId]: value }))
-
-    // Optional: find potential autocomplete match
-    const question = questions.find(q => q.id === questionId)
-    if (question) {
-      const correctAnswers = question.choices
-        .filter(choice => choice.is_correct)
-        .map(choice => choice.text)
-
-      const match = findPartialMatch(value, correctAnswers)
-      setAutoCompleteMatch(match)
-    }
-  }
-
-  // Navigation
-  const goToNextQuestion = () => {
-    if (!isLastQuestion) setCurrentQuestionIndex(i => i + 1)
-  }
-
-  const goToPreviousQuestion = () => {
-    if (!isFirstQuestion) setCurrentQuestionIndex(i => i - 1)
-  }
-
-  // Clear quiz
-  const clearQuiz = useCallback(() => {
-    setUserAnswers({})
-    setSubmitted(false)
-    setScore(null)
-    setCurrentQuestionIndex(0)
-    setShowReview(false)
-    setSkippedQuestions([])
-    setShowingSkipped(false)
-
-    // localStorage.removeItem('userAnswers')
-    // localStorage.removeItem('quizSubmitted')
-    // localStorage.removeItem('quizScore')
-    // clearQuiz()
-
-    // Reload fresh questions
-    loadQuestions()
-  }, [loadQuestions])
-
-  // Partial match for open-text (autocomplete)
-  const findPartialMatch = (input: string, possibleAnswers: string[]): string | null => {
-    const normalized = input.toLowerCase().trim()
-    if (!normalized) return null
-
-    for (const ans of possibleAnswers) {
-      const normalizedAns = ans.toLowerCase()
-      if (normalizedAns.startsWith(normalized) && normalized !== normalizedAns) {
-        return ans
-      }
-    }
-    return null
-  }
-
-  // Skipping
-  const [skippedQuestions, setSkippedQuestions] = useState<string[]>([])
-  const [showingSkipped, setShowingSkipped] = useState(false)
-
-  const handleSkipQuestion = (questionId: string, goNext: boolean = false) => {
-    setSkippedQuestions(prev =>
-      prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
-    )
-
-    if (goNext && isPaginatedView && !isLastQuestion) {
-      goToNextQuestion()
-    }
-  }
-
-  const handleQuestionKeyPress = useCallback(
-    (questionId: string) => {
-      // Skip if no answer provided
-      const val = userAnswers[questionId]
-      const isEmpty =
-        !val ||
-        (Array.isArray(val) && val.length === 0) ||
-        (typeof val === 'string' && !val.trim())
-
-      if (isEmpty) {
-        handleSkipQuestion(questionId, true)
-      } else if (!isLastQuestion) {
-        goToNextQuestion()
-      }
-    },
-    [userAnswers, isLastQuestion, handleSkipQuestion, goToNextQuestion]
-  )
-
-  useEffect(() => {
-    const savedSkipped = getLocalStorage('skippedQuestions')
-    if (savedSkipped) {
-      setSkippedQuestions(savedSkipped)
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('skippedQuestions', JSON.stringify(skippedQuestions))
-  }, [skippedQuestions])
-
-  // Review
-  const handleReviewClick = () => {
-    setShowReview(true)
-    questionsRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-  const handleReviewSkipped = () => {
-    setShowingSkipped(true)
-    setShowReview(true)
-    questionsRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  // Common props for <QuestionComponent />
-  const [autoCompleteMatch, setAutoCompleteMatch] = useState<string | null>(null)
-
+  // Common props for QuestionComponent
   const commonQuestionProps = {
     isMultipleChoice,
     submitted,
     userAnswers,
-    handleAnswerChange,
-    handleTextAnswerChange,
-    handleKeyDown: (e: React.KeyboardEvent<HTMLElement>, questionId: string) => {
-      // Only handle Tab key for autocomplete
-      if (e.key === 'Tab' && autoCompleteMatch) {
-        e.preventDefault()
-        handleTextAnswerChange(questionId, autoCompleteMatch)
-        setAutoCompleteMatch(null)
-      }
-    },
-    onQuestionKeyPress: handleQuestionKeyPress,
+    handleAnswerChangeAction: handleAnswerChange,
+    handleTextAnswerChangeAction: handleTextAnswerChange,
+    onQuestionKeyPressAction: handleQuestionKeyPress,
+    handleKeyDownAction: handleKeyDown,
     autoCompleteMatch,
     onSkipQuestion: handleSkipQuestion,
     skippedQuestions,
-  }
+  };
 
-  // Render a list of questions + optional Submit button
-  const renderQuestionList = (
-    theseQuestions: Question[],
-    showSubmit: boolean = false
-  ) => (
+  // Reusable renderer for question list
+  const renderQuestionList = (theseQuestions: QuestionType[], showSubmit: boolean) => (
     <div className="space-y-4 w-full">
-      {theseQuestions.map(question => (
-        <QuestionComponent
+      {theseQuestions.map((question) => (
+        <Question
           key={question.id}
           {...commonQuestionProps}
           question={question}
           showCorrectAnswers={!isMultipleChoice && submitted}
-          correctAnswers={question.choices.filter(c => c.is_correct).map(c => c.text)}
+          correctAnswers={question.choices.filter((c) => c.is_correct).map((c) => c.text)}
           evaluationResult={evaluationResults[question.id]}
         />
       ))}
-
       {showSubmit && !submitted && (
         <div className="flex flex-col items-center mt-8 space-y-2">
-          {/* Single place to call handleEvaluate */}
           <Button
             onClick={handleEvaluate}
             className="bg-[#f45844] hover:bg-[#f45844]/90 text-white"
@@ -425,32 +104,29 @@ export default function Test() {
               'Submit Quiz'
             )}
           </Button>
-          {evaluating && (
-            <p className="text-sm text-gray-600">
-              This may take a moment as we carefully evaluate your answers
-            </p>
-          )}
         </div>
       )}
     </div>
-  )
+  );
 
+  // Decide which questions to show (normal vs skipped)
+  const displayedQuestions = showingSkipped
+    ? questions.filter((q) => skippedQuestions.includes(q.id))
+    : questions;
+
+  // Main quiz rendering logic
   const renderQuestions = () => {
-    const questionsToDisplay = showingSkipped
-      ? questions.filter(q => skippedQuestions.includes(q.id))
-      : questions
+    if (loading) return <div>Loading questions...</div>;
+    if (error) return <div className="text-red-500">Error: {error}</div>;
+    if (!displayedQuestions.length) return <div>No questions available.</div>;
 
-    if (loading) return <div>Loading questions...</div>
-    if (error) return <div className="text-red-500">Error: {error}</div>
-    if (!questionsToDisplay.length) return <div>No questions available.</div>
-
-    // If not submitted yet
+    // Not submitted yet
     if (!submitted) {
       // Paginated mode
       if (isPaginatedView && currentQuestion) {
         return (
           <>
-            <QuestionComponent
+            <Question
               key={currentQuestion.id}
               {...commonQuestionProps}
               question={currentQuestion}
@@ -495,30 +171,28 @@ export default function Test() {
               )}
             </div>
           </>
-        )
+        );
       }
 
       // Non-paginated mode
-      return renderQuestionList(questionsToDisplay, true)
+      return renderQuestionList(displayedQuestions, true);
     }
 
-    // If submitted and user chooses to "review"
-    return showReview ? renderQuestionList(questionsToDisplay) : null
-  }
+    // Submitted => show review if requested
+    return showReview ? renderQuestionList(displayedQuestions, false) : null;
+  };
 
   return (
     <main className="container mx-auto p-2 sm:p-4 pt-10 max-w-[1200px]">
-      {/* e.g. Show question count */}
       <div className="hidden sm:block text-sm text-gray-600 mb-4 px-2 sm:px-0">
-        Showing {questions.length} question
-        {questions.length !== 1 ? 's' : ''}
+        Showing {questions.length} question{questions.length !== 1 ? 's' : ''}
       </div>
 
       {submitted && score !== null && questions.length > 0 && (
         <Review
           score={score}
           totalQuestions={questions.length}
-          mode={mode}
+          mode={quizParams.mode}
           onClearQuiz={clearQuiz}
           onReviewClick={handleReviewClick}
           skippedQuestions={skippedQuestions}
@@ -526,12 +200,9 @@ export default function Test() {
         />
       )}
 
-      <div 
-        ref={questionsRef} 
-        className="w-full max-w-4xl mx-auto px-1 sm:px-1 lg:px-8"
-      >
+      <div ref={questionsRef} className="w-full max-w-4xl mx-auto px-1 sm:px-1 lg:px-8">
         {renderQuestions()}
       </div>
     </main>
-  )
+  );
 }
