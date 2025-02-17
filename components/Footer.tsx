@@ -32,7 +32,7 @@ export default function Footer() {
                 href={'https://x.com/asisbot'}
                 target="_blank"
                 rel="noreferrer"
-                className="font-medium underline underline-offset-4"
+                className="font-medium "
               >
                 @asisbot
               </a>

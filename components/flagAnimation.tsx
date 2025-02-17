@@ -42,7 +42,7 @@ export default function GlitchingFlag() {
     const pixelSize = 3
     const minInterval = 100
     const maxInterval = 200
-    const opacityVariance = 0.2
+    const opacityVariance = 0.6
     const stateChangeProbability = 0.01  
     const glitchCharacters = ["",  "-" ,"|", "*", "#"]
 
