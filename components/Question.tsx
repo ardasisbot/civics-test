@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Question as QuestionType } from '@/types/question';
 import { MultipleChoiceMode } from '@/types/question';
-import { Card, CardTitle, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Image from 'next/image';
@@ -74,7 +74,6 @@ export function Question({
   skippedQuestions = [],
   evaluationResult,
   showCorrectAnswers,
-  correctAnswers,
 }: QuestionProps) {
   const [isHintShown, setIsHintShown] = useState(false);
   const [isAnswerShown, setIsAnswerShown] = useState(false);
@@ -257,9 +256,7 @@ function MultipleChoiceQuestion({
   question, 
   userAnswers, 
   handleAnswerChange, 
-  handleKeyDown, 
   submitted, 
-  isAnswerShown 
 }: MultipleChoiceQuestionProps) {
   const mode = question.modes.find((m) => m.type === "multiple_choice") as MultipleChoiceMode
   const choices = question.getFilteredChoices(mode)
@@ -289,7 +286,7 @@ function MultipleChoiceQuestion({
               type="checkbox"
               id={`q${question.id}-0`}
               checked={questionAnswers.includes(shuffledChoices[0].text)}
-              onChange={(e) => handleAnswerChange(question.id, shuffledChoices[0].text, isMultipleCorrect)}
+              onChange={() => handleAnswerChange(question.id, shuffledChoices[0].text, isMultipleCorrect)}
               disabled={submitted}
               className="absolute left-3 top-1/2 -translate-y-1/2 border-2 border-zinc-300 group-hover:border-[#f45844] cursor-pointer"
             />

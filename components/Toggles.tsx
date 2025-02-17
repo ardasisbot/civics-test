@@ -1,10 +1,11 @@
 'use client'
 
+import { Suspense } from 'react'
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
+import { useQuizParams } from '@/hooks/useQuizParams'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +15,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useState } from 'react'
 import {
@@ -23,32 +23,20 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
 
-export function Toggles() {
+function TogglesContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const mode = searchParams.get('mode')
-  const view = searchParams.get('view') || 'paginated'
-  const answerType = searchParams.get('answerType') || 'easy'
+  const { mode, view, answerType } = useQuizParams(searchParams)
   const isTestRoute = searchParams.has('mode')
   const [showAlert, setShowAlert] = useState(false)
-  const [showMissedAlert, setShowMissedAlert] = useState(false)
-  const reviewMissed = searchParams.get('reviewMissed') === 'true'
-
+  
   const handleModeChange = () => {
     localStorage.clear() // Clear saved answers
     const newMode = mode === 'full' ? 'sample' : 'full'
     router.push(`/test?mode=${newMode}&view=${view}&answerType=${answerType}`)
   }
 
-  const handleMissedStateChange = () => {
-    setShowMissedAlert(true)
-  }
-
-  if (!isTestRoute) {
-    return (
-        <></>
-    )
-  }
+  if (!isTestRoute) return null
 
   return (
     <div className="flex items-center space-x-6">
@@ -130,5 +118,13 @@ export function Toggles() {
 
 
     </div>
+  )
+}
+
+export function Toggles() {
+  return (
+    <Suspense>
+      <TogglesContent />
+    </Suspense>
   )
 } 

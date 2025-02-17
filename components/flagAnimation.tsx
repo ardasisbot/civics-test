@@ -39,7 +39,7 @@ export default function GlitchingFlag() {
     image.src = '/us_flag.png'
 
     // Fixed parameters
-    const pixelSize = 3
+    const pixelSize = 2
     const minInterval = 100
     const maxInterval = 200
     const opacityVariance = 0.6

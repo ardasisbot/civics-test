@@ -60,7 +60,7 @@ export class Question {
           throw new Error(`Question '${this.text}' has num_choices=${mode.num_choices} but requires at least ${correctChoices.length} correct answers.`);
         }
 
-        if (mode.selection_rule === "single" && correctChoices.length > 1) {
+        if (mode.selection_rule === "single_correct" && correctChoices.length > 1) {
           throw new Error(`Multiple-choice question '${this.text}' is set to 'single' selection but has multiple correct answers.`);
         }
 
