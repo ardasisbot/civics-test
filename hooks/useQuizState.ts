@@ -153,7 +153,8 @@ export function useQuiz(searchParams: ReturnType<typeof useQuizParams>): UseQuiz
 
         // Only call API for the uncertain ones
         if (needsEvaluation.length > 0) {
-          const response = await fetch('/api/evaluateQuiz', {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+          const response = await fetch(`${apiUrl}/evaluateQuiz`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(needsEvaluation),
