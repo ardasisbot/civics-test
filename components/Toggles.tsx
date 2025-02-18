@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from 'react'
 import { Switch } from "@/components/ui/switch"
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useQuizParams } from '@/hooks/useQuizParams'
 import { useQuiz } from '@/hooks/useQuizState'
 import {
@@ -18,10 +18,9 @@ import {
 
 function TogglesContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const params = useQuizParams(searchParams)
   const { clearQuiz } = useQuiz(params)
-  const { mode, view, answerType } = params
+  const { mode, answerType } = params
   const isTestRoute = searchParams?.has('mode') ?? false
 
   const [showModeAlert, setShowModeAlert] = useState(false)
