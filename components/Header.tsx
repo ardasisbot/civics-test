@@ -66,7 +66,9 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-14 left-0 right-0 bg-background border-t shadow-md py-4">
             <div className="flex flex-col items-center gap-4">
-              <Toggles />
+              <div onClick={() => setIsMobileMenuOpen(false)}>
+                <Toggles />
+              </div>
               <Link href="/about" className="text-sm font-medium" onClick={() => setIsMobileMenuOpen(false)}>
                 About
               </Link>
@@ -80,7 +82,9 @@ export default function Header() {
                 <Github className="h-5 w-5" />
                 GitHub
               </Link>
-              <ModeToggle />
+              <div onClick={() => setIsMobileMenuOpen(false)}>
+                <ModeToggle />
+              </div>
             </div>
           </div>
         )}

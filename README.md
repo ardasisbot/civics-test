@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# USCIS Civic Test Prep
 
-## Getting Started
+This is a fun experiment to make USCIS civic test prep more engaging. The official study guide only provides a set of allowed answers per question, so we're making it better with both multiple choice and free text versions.
 
-First, run the development server:
+## How it Works
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Multiple Choice
+We use LLMs to augment the data by:
+- Adding incorrect choices for multiple choice questions
+- Generating helpful hints
+- Providing detailed correct answers
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Free Text
+This is where LLMs make the pipeline much simpler - instead of validating answers with a ton of custom rules, we rely on LLM to validate user's answers for:
+- Typos
+- Semantically correct answers
+- Alternative valid explanations
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+--
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Offline Scripts 
 
-## Learn More
+The `/scripts` folder contains Python utilities that prepare and enrich the USCIS test data:
 
-To learn more about Next.js, take a look at the following resources:
+### 1. `extract_questions.py`
+Base data extraction script that:
+- Pulls questions from the official USCIS PDF
+- Scrapes current questions from the USCIS website
+- Merges both sources to create a comprehensive question bank
+- Outputs: `merged_questions.json`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. `add_incorrect_answers.py`
+Enhances questions for multiple choice by:
+- Using GPT-4 to generate 3 plausible but incorrect answers per question
+- Ensures wrong answers are distinct and based on common misconceptions
+- Outputs: `questions_with_incorrect.json`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. `add_answer_hints.py`
+Adds learning aids by:
+- Generating concise, contextual hints for each question
+- Provides historical context without giving away answers
+- Keeps hints under 100 characters when possible
+- Outputs: `questions_with_hints.json`
 
-## Deploy on Vercel
+Each script processes data in batches of 10 questions and includes retry logic for API calls. The pipeline runs sequentially: extract → add incorrect answers → add hints, with each step building on the previous output.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built with:
+- [Next.js](https://nextjs.org) App Router
+- [shadcn/ui](https://ui.shadcn.com/) for component library
+- [v0.dev](https://v0.dev/) for design help
+
+
+## Author
+
+Built by [@asisbot](https://github.com/asisbot)
+

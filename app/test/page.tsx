@@ -8,6 +8,7 @@ import { Review } from '@/components/Review';
 import { useQuizParams } from '@/hooks/useQuizParams';
 import { useQuiz } from '@/hooks/useQuizState'; // import the hook we created
 import { Question as QuestionType } from '@/types/question';
+import { useSwipeable } from 'react-swipeable';
 
 export default function Test() {
   const searchParams = useSearchParams();
@@ -114,6 +115,22 @@ export default function Test() {
     ? questions.filter((q) => skippedQuestions.includes(q.id))
     : questions;
 
+  // Add swipe handlers
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (!isLastQuestion && isPaginatedView && !submitted) {
+        goToNextQuestion();
+      }
+    },
+    onSwipedRight: () => {
+      if (!isFirstQuestion && isPaginatedView && !submitted) {
+        goToPreviousQuestion();
+      }
+    },
+    trackMouse: false, // Only track touch events
+    preventScrollOnSwipe: true,
+  });
+
   // Main quiz rendering logic
   const renderQuestions = () => {
     if (loading) return <div>Loading questions...</div>;
@@ -125,7 +142,7 @@ export default function Test() {
       // Paginated mode
       if (isPaginatedView && currentQuestion) {
         return (
-          <>
+          <div {...swipeHandlers}>
             <Question
               key={currentQuestion.id}
               {...commonQuestionProps}
@@ -170,7 +187,7 @@ export default function Test() {
                 </Button>
               )}
             </div>
-          </>
+          </div>
         );
       }
 
