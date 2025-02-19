@@ -125,7 +125,8 @@
       "Right to property",
       "Right to free speech"
     ],
-    "hint": "These include core human entitlements."
+    "hint": "These include core human entitlements.",
+    "num_selections": 2
   },
   {
     "question_number": 10,
@@ -923,7 +924,8 @@
       "Maine, Florida, Texas",
       "Tennessee, Indiana, Louisiana"
     ],
-    "hint": "Consider the earliest states on the East Coast."
+    "hint": "Consider the earliest states on the East Coast.",
+    "num_selections": 3
   },
   {
     "question_number": 65,
@@ -1472,6 +1474,7 @@
       "St. Patrick's Day",
       "Valentine's Day"
     ],
-    "hint": "Includes holidays like Thanksgiving and Christmas."
+    "hint": "Includes holidays like Thanksgiving and Christmas.",
+    "num_selections": 2
   }
 ]

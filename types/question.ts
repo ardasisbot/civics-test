@@ -20,6 +20,7 @@ export class Question {
   id: string;
   text: string;
   hint?: string;
+  num_selections?: number;
   modes: (OpenTextMode | MultipleChoiceMode)[];
   choices: Choice[];
 
@@ -28,11 +29,13 @@ export class Question {
     text: string,
     modes: (OpenTextMode | MultipleChoiceMode)[],
     choices: Choice[],
-    hint?: string
+    hint?: string,
+    num_selections?: number
   ) {
     this.id = id;
     this.text = text;
     this.hint = hint;
+    this.num_selections = num_selections;
     this.modes = modes;
     this.choices = choices;
     this.validate();
@@ -101,25 +104,25 @@ export class Question {
         break;
 
       case "multiple_correct":
-        selectedChoices = [...correctChoices];
-        const multipleIncorrectNeeded = mode.num_choices - correctChoices.length;
+        selectedChoices = [...correctChoices.slice(0, this.num_selections)];
+        const multipleIncorrectNeeded = mode.num_choices - selectedChoices.length;
         selectedChoices.push(...(mode.randomize_choices
           ? this.shuffleArray(incorrectChoices).slice(0, multipleIncorrectNeeded)
           : incorrectChoices.slice(0, multipleIncorrectNeeded)));
         break;
 
-      case "exact_n_correct":
-        if (correctChoices.length < (mode.required_correct_count || 0)) {
-          throw new Error(`Not enough correct answers for '${this.text}'`);
-        }
-        selectedChoices = mode.randomize_choices
-          ? this.shuffleArray(correctChoices).slice(0, mode.required_correct_count)
-          : correctChoices.slice(0, mode.required_correct_count);
-        const exactNIncorrectNeeded = mode.num_choices - selectedChoices.length;
-        selectedChoices.push(...(mode.randomize_choices
-          ? this.shuffleArray(incorrectChoices).slice(0, exactNIncorrectNeeded)
-          : incorrectChoices.slice(0, exactNIncorrectNeeded)));
-        break;
+      // case "exact_n_correct":
+      //   if (correctChoices.length < (mode.required_correct_count || 0)) {
+      //     throw new Error(`Not enough correct answers for '${this.text}'`);
+      //   }
+      //   selectedChoices = mode.randomize_choices
+      //     ? this.shuffleArray(correctChoices).slice(0, mode.required_correct_count)
+      //     : correctChoices.slice(0, mode.required_correct_count);
+      //   const exactNIncorrectNeeded = mode.num_choices - selectedChoices.length;
+      //   selectedChoices.push(...(mode.randomize_choices
+      //     ? this.shuffleArray(incorrectChoices).slice(0, exactNIncorrectNeeded)
+      //     : incorrectChoices.slice(0, exactNIncorrectNeeded)));
+      //   break;
     }
 
     return selectedChoices.slice(0, mode.num_choices);

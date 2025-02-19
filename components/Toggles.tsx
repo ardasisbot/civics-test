@@ -40,7 +40,9 @@ function TogglesContent() {
 
   const handleModeChange = () => {
     if (isMobile) {
-      handleModeConfirm()
+      const newMode = mode === 'full' ? 'sample' : 'full'
+      clearQuiz()
+      window.location.href = `/test?mode=${newMode}`
     } else {
       setShowModeAlert(true)
     }
@@ -48,7 +50,9 @@ function TogglesContent() {
 
   const handleAnswerTypeChange = () => {
     if (isMobile) {
-      handleAnswerTypeConfirm()
+      const newAnswerType = answerType === 'easy' ? 'hard' : 'easy'
+      clearQuiz()
+      window.location.href = `/test?mode=${mode}&answerType=${newAnswerType}`
     } else {
       setShowAnswerTypeAlert(true)
     }
@@ -58,14 +62,12 @@ function TogglesContent() {
     const newMode = mode === 'full' ? 'sample' : 'full'
     clearQuiz()
     window.location.href = `/test?mode=${newMode}`
-    setShowModeAlert(false)
   }
 
   const handleAnswerTypeConfirm = () => {
     const newAnswerType = answerType === 'easy' ? 'hard' : 'easy'
     clearQuiz()
     window.location.href = `/test?mode=${mode}&answerType=${newAnswerType}`
-    setShowAnswerTypeAlert(false)
   }
 
   if (!isTestRoute) return null

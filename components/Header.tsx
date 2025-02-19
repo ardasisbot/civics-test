@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Toggles } from "./Toggles";
 import { Github, Menu, X } from "lucide-react";
-import { ModeToggle } from "./ModeToggle";
+// import { ModeToggle } from "./ModeToggle";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -48,7 +48,7 @@ export default function Header() {
                   <Github className="h-5 w-5" />
                 </Link>
               </Button>
-              <ModeToggle />
+              {/* <ModeToggle /> */}
             </div>
 
             {/* Mobile menu toggle */}
@@ -64,12 +64,12 @@ export default function Header() {
 
         {/* Mobile menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-14 left-0 right-0 bg-background border-t shadow-md py-4">
-            <div className="flex flex-col items-center gap-4">
+          <div className="md:hidden absolute top-12 left-0 right-0 bg-background border-t shadow-md py-0 mb-2">
+            <div className="flex flex-col items-center gap-4 mb-2">
               <div onClick={() => setIsMobileMenuOpen(false)}>
                 <Toggles />
               </div>
-              <Link href="/about" className="text-sm font-medium" onClick={() => setIsMobileMenuOpen(false)}>
+              <Link href="/about" className="text-sm font-medium  " onClick={() => setIsMobileMenuOpen(false)}>
                 About
               </Link>
               <Link
@@ -82,9 +82,9 @@ export default function Header() {
                 <Github className="h-5 w-5" />
                 GitHub
               </Link>
-              <div onClick={() => setIsMobileMenuOpen(false)}>
+              {/* <div onClick={() => setIsMobileMenuOpen(false)}>
                 <ModeToggle />
-              </div>
+              </div> */}
             </div>
           </div>
         )}
