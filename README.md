@@ -1,4 +1,4 @@
-# 🇺🇸 USCIS Civic Test Prep
+# 🇺🇸 U.S. Civic Test Prep
 
 This is a fun experiment to make USCIS civic test prep more engaging. The official study guide only provides a set of allowed answers per question, so we're making it better with both multiple choice and free text versions.
 
