@@ -76,22 +76,6 @@ export default function AboutPage() {
               </li>
             </ul>
           </section>
-
-          <section className="group hover:bg-muted/20 p-3 rounded-lg transition-all duration-300">
-            <h2 className="text-2xl font-semibold mb-4 tracking-tight">Open Source</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              This project is open source and available on GitHub. Contributions are welcome! Visit our 
-              <a 
-                href="https://github.com/ardasisbot/civics-test" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline ml-1"
-              >
-                GitHub repo
-              </a> 
-             {' ' }to learn more about how you can contribute to improving this educational resource.
-            </p>
-          </section>
         </CardContent>
       </Card>
     </main>
