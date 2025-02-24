@@ -27,6 +27,9 @@ export const metadata: Metadata = {
     description: "Free practice platform for the U.S. citizenship test",
     type: "website",
   },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || '',
+  },
 };
 
 export default function RootLayout({
