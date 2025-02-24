@@ -1,9 +1,11 @@
-# USCIS Civic Test Prep
+# 🇺🇸 U.S. Civics Test Prep
 
-This is a fun experiment to make USCIS civic test prep more engaging. The official study guide only provides a set of allowed answers per question, so we're making it better with both multiple choice and free text versions.
+This is a fun experiment to make USCIS civics test prep more engaging. The official study guide only provides a set of allowed answers per question, so we're making it better with both multiple choice and free text versions.
+
+![Civics Test Practice Video Speed](https://github.com/user-attachments/assets/f2201bf9-0936-44a9-88fd-5ec279e29220)
 
 ## How it Works
-
+We first ingest the [100 questions provided by USCIS](https://www.uscis.gov/sites/default/files/document/questions-and-answers/100q.pdf).
 ### Multiple Choice
 We use LLMs to augment the data by:
 - Adding incorrect choices for multiple choice questions
